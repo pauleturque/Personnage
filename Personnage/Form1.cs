@@ -27,7 +27,40 @@ namespace Personnage
              * Constructeur
              * Valorise le login et initialise la vie à 10
              */
-            public Personnage(string login) { }
+            public Personnage(string login) 
+            {
+                this.login = login;
+                Random NbAlea = new Random();
+                this.vie = NbAlea.Next(0, 5);
+            }
+
+            /**
+             * getter sur vie
+             */
+            public int getVie()
+            {
+                return vie;
+
+            }
+
+            /**
+             * Setter sur vie
+             */
+            public void setVie(int vie)
+            {
+                this.vie = vie;
+            }
+
+            /**
+             * getter sur login
+             */
+            public string getLogin()
+            {
+                return login;
+            }
+
+
+
             /** Permet de faire avancer le joueur
              * retourne faux s'il a été bloqué par un mur
              */
@@ -90,5 +123,144 @@ namespace Personnage
 
             }
         }
+
+
+
+        /**
+         * Enoncé de l'exercice : 
+         * Création d'un tableau d'objets de type Personnage
+         * A chaque saisie d'un nouveau login, un perso est créé dans le tableau
+         * Afficher sa vie et un message personnalisé avec son login et sa vie ou de 'est mort'
+         * Il est automatiquement sélectionné dans la liste
+         * Le personnage qui a le plus de vie est automatiquement affiché en bas
+         * Possibilité de changer la valeur vie via un NumberUpDown
+         * Mise à jour auto
+         * Nouvelle recherche du perso avec le max de vie 
+         */
+
+        // Création du tableau de personnages
+        private Personnage[] lesPersonnages = new Personnage[100];
+        private int nbPersos = 0;
+
+        /**
+         * Affichage du login suivi de la vie ou de est mort
+         */
+        private void AfficheMsgPerso(Personnage unPersonnage)
+        { 
+            if(unPersonnage.getVie() == 0)
+            {
+                txtEtatPerso.Text = unPersonnage.getLogin() + " est mort :'(";
+            }
+            else
+            {
+                txtEtatPerso.Text = unPersonnage.getLogin() + " : " + unPersonnage.getVie();
+            }
+        }
+
+        /**
+         * mise à jour de la liste des personnages
+         */
+
+        private void majListePersos(int ligneActive)
+        {
+            // Vider la liste
+            listPersos.Items.Clear();
+            // Remplir avec le tableau de personnages
+            for (int i = 0; i < nbPersos; i++)
+            {
+                listPersos.Items.Add(lesPersonnages[i].getLogin() + " : " + lesPersonnages[i].getVie());
+            }
+            // Positionnement sur la ligne active
+            if (listPersos.Items.Count > 0 && ligneActive < nbPersos)
+            {
+                listPersos.SelectedIndex = ligneActive;
+            }
+        }
+
+        private void persoMaxVie()
+        {
+            //Contrôle s'il y a au moins un personnage
+            if (nbPersos == 0)
+            {
+                txtBoxMaxVie.Text = "";
+            }
+            else
+            {
+                // recherche de l'indice de la vie max
+                int max = 0;
+                // boucle 
+                for (int i = 1; i < nbPersos; i++)
+                {
+                    if (lesPersonnages[i].getVie() > lesPersonnages[max].getVie())
+                    {
+                        max = i;
+                    }
+                }
+                txtBoxMaxVie.Text = lesPersonnages[max].getLogin();
+            }
+        }
+
+        /** 
+         * Changement de vie
+         */
+        private void changeViePerso(int index)
+        {
+            // Affichage du message perso
+            AfficheMsgPerso(lesPersonnages[index]);
+            // Mise à jour de la liste des personnages
+            majListePersos(index);
+            // Affichage du login de la vie max
+            persoMaxVie();
+        }
+
+        /**
+         * Touche appuyée sur txtLogin
+         * Contrôle de la validation
+         * Création d'un nouveau personnage
+         */
+        private void txtBoxLogin_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Contrôle sur validation
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                //incrémentation du nombre de personnages
+                nbPersos++;
+                // Création du personnage
+                Personnage unPersonnage = new Personnage(txtBoxLogin.Text);
+                // Ajout du personnage dans le tableau
+                lesPersonnages[nbPersos - 1] = unPersonnage;
+                // Mise à jour des affichages
+                changeViePerso(nbPersos - 1);
+                // Vider la zone de saisie et se repositionner dessus
+                txtBoxLogin.Text = "";
+                txtBoxLogin.Focus();
+            }
+            
+        }
+
+        /** 
+         * Sélection d'une ligne dans la liste des personnages
+         */
+        private void listPersos_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            numericUpDown1.Value = lesPersonnages[listPersos.SelectedIndex].getVie();
+
+        }
+
+        /** 
+         * Changement de la vie sur up-down
+         */
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            if (listPersos.SelectedIndex >= 0)
+            {
+                // Récupération du personnage sélectionné
+                Personnage unPersonnage = lesPersonnages[listPersos.SelectedIndex];
+                // Modification de la vie 
+                unPersonnage.setVie((int)numericUpDown1.Value);
+                changeViePerso(listPersos.SelectedIndex);
+            }
+        }
     }
 }
+
